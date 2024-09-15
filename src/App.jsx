@@ -1,90 +1,85 @@
-import React, { useState } from "react";
-import TodoInput from "./components/TodoInput";
+import { useState } from "react";
 
-const TodoApp = () => {
-  const [todos, setTodos] = useState([]); // State for storing todo items
-  const [editId, setEditId] = useState(null); // State for handling edit operations
-  const [editText, setEditText] = useState(""); // State for the text of the todo being edited
 
-  // Function to handle adding a new todo
-  const handleAddTodo = (newTodo) => {
-    if (!newTodo) return; // Prevent adding empty todos
-    const newTodos = [...todos, { id: Date.now(), text: newTodo }];
-    setTodos(newTodos);
-  };
+const App = () => {
+  const [todos, setTodos] = useState([]);
+const [inputValue, setInputValue] = useState('');
+const [isEditing, setIsEditing] = useState(false);
+const [currentTodoIndex, setCurrentTodoIndex] = useState(null);
 
-  // Function to handle deleting a todo
-  const handleDeleteTodo = (id) => {
-    const newTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(newTodos);
-  };
+const addTodo = () => {
+  if (inputValue.trim()) {
+    setTodos([...todos, inputValue]);
+    setInputValue('');
+  }
+};
 
-  // Function to handle editing a todo
-  const handleEditTodo = (id, text) => {
-    setEditId(id);
-    setEditText(text);
-  };
+const deleteTodo = (index) => {
+  const newTodos = todos.filter((todo, i) => i !== index);
+  setTodos(newTodos);
+};
 
-  // Function to update the edited todo
-  const handleUpdateTodo = () => {
-    if (!editText) return; // Prevent empty updates
-    const newTodos = todos.map((todo) =>
-      todo.id === editId ? { ...todo, text: editText } : todo
-    );
-    setTodos(newTodos);
-    setEditId(null);
-    setEditText("");
-  };
+const startEditing = (index) => {
+  setIsEditing(true);
+  setCurrentTodoIndex(index);
+  setInputValue(todos[index]);
+};
+
+const editTodo = () => {
+  const newTodos = [...todos];
+  newTodos[currentTodoIndex] = inputValue;
+  setTodos(newTodos);
+  setIsEditing(false);
+  setInputValue('');
+  setCurrentTodoIndex(null);
+};
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-6 bg-gray-200">
-      <TodoInput onAddTodo={handleAddTodo} />
-      <div className="mt-6 w-96">
-        {todos.map((todo) => (
-          <div
-            key={todo.id}
-            className="flex justify-between items-center bg-white p-2 rounded shadow mb-2"
-          >
-            {editId === todo.id ? (
-              <input
-                type="text"
-                className="border-2 p-1"
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-              />
-            ) : (
-              <span>{todo.text}</span>
-            )}
-            <div>
-              {editId === todo.id ? (
+    <div className="min-h-screen bg-gray-100 flex justify-center items-center">
+      <div className="bg-white p-8 rounded shadow-lg w-96">
+        <h1 className="text-2xl font-bold mb-4">Todo List</h1>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded mb-4"
+          placeholder="Add a new todo"
+        />
+        <button
+          onClick={isEditing ? editTodo : addTodo}
+          className={`w-full ${isEditing ? 'bg-green-500' : 'bg-blue-500'} text-white p-2 rounded mb-4`}
+        >
+          {isEditing ? 'Update Todo' : 'Add Todo'}
+        </button>
+        <ul>
+          {todos.map((todo, index) => (
+            <li
+              key={index}
+              className="flex justify-between items-center bg-gray-100 p-2 rounded mb-2"
+            >
+              {todo}
+
+              <div>
                 <button
-                  onClick={handleUpdateTodo}
-                  className="ml-2 bg-blue-500 text-white p-1 rounded"
+                  onClick={() => startEditing(index)}
+                  className="text-blue-500 mr-36"
                 >
-                  Update
+                  Edit
                 </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleEditTodo(todo.id, todo.text)}
-                    className="ml-2 bg-green-500 text-white p-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTodo(todo.id)}
-                    className="ml-2 bg-red-500 text-white p-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
+                <button
+                  onClick={() => deleteTodo(index)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
-};
+  
+}
 
-export default TodoApp;
+export default App
